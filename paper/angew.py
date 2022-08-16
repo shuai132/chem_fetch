@@ -56,9 +56,15 @@ class Angew(PaperFetcher):
             item_img_url = html.xpath('//div[@class="toc-item__abstract abstract-preview"]/div/a/@href')
             if len(item_img_url) > 0:
                 item.img = url_home + item_img_url[0]
-            item.title = etree.tostring(html.xpath('//a/h2')[0], encoding=str).strip()[len("<h2>"): -len("</h2>")].strip()
+            item.title = etree.tostring(html.xpath('//a/h2')[0], encoding=str).strip()[
+                         len("<h2>"): -len("</h2>")].strip()
 
-            item.desc = etree.tostring(html.xpath('//div[@class="toc-item__abstract abstract-preview"]/div/p')[0], encoding=str).strip()[len("<p>"): -len("</p>")].strip()
+            # noinspection PyBroadException
+            try:
+                item.desc = etree.tostring(html.xpath('//div[@class="toc-item__abstract abstract-preview"]/div/p')[0],
+                                           encoding=str).strip()[len("<p>"): -len("</p>")].strip()
+            except Exception:
+                pass
 
             item.author_list = html.xpath('//div[@class="comma__list"]/span/a/@title')
 

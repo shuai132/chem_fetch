@@ -118,8 +118,11 @@ def main():
         if args.force_update:
             log.i("count_update:", count_update)
         log.i("count_insert:", count_insert)
-        update_time()
+
         recorder.save()
+
+        if not args.debug:
+            update_time()
 
     fetch_and_update()
     loop_interval = args.loop
