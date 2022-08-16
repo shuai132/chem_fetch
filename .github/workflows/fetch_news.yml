@@ -34,5 +34,8 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run
+        env:
+          BMOB_APP_ID: ${{ secrets.BMOB_APP_ID }}
+          BMOB_APP_KEY: ${{ secrets.BMOB_APP_KEY }}
         run: |
-          python main.py --debug
+          python main.py --BMOB_APP_ID=$BMOB_APP_ID --BMOB_APP_KEY=$BMOB_APP_KEY
