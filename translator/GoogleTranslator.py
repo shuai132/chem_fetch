@@ -3,16 +3,6 @@ import re
 import urllib.parse
 import urllib.request
 
-agent = {'User-Agent': "Mozilla/4.0 (\
-    compatible;\
-    MSIE 6.0;\
-    Windows NT 5.1;\
-    SV1;\
-    .NET CLR 1.1.4322;\
-    .NET CLR 2.0.50727;\
-    .NET CLR 3.0.04506.30\
-    )"}
-
 
 def unescape(text):
     parser = html
@@ -24,7 +14,9 @@ def translate(to_translate, to_language="zh-CN", from_language="auto"):
     to_translate = urllib.parse.quote(to_translate)
 
     link = base_link % (to_language, from_language, to_translate)
-    request = urllib.request.Request(link, headers=agent)
+    request = urllib.request.Request(link, headers={
+        'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36",
+    })
     raw_data = urllib.request.urlopen(request).read()
     data = raw_data.decode("utf-8")
 
@@ -35,3 +27,8 @@ def translate(to_translate, to_language="zh-CN", from_language="auto"):
     else:
         result = unescape(re_result[0])
     return result
+
+
+if __name__ == '__main__':
+    text_data = "The reduction of [TiCp*Cl] with magnesium leads to a mixed-valence titanium species capable of reacting with dinitrogen to form a stable trinuclear complex with a η : η : η-N ligand. This dinitrogen complex further reacts cleanly with HCl to produce NHCl with regeneration of the titanium precursor. Thus, a cyclic ammonia synthesis under ambient conditions can be envisaged."
+    print(translate(text_data))
