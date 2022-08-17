@@ -4,7 +4,6 @@ from lxml import etree
 
 import utils
 from data import News
-from log import log
 from paper_fetcher import PaperFetcher
 from utils import get_html_text
 
@@ -70,7 +69,7 @@ class Angew(PaperFetcher):
 
             item.from_ = "Angew"
             news.append(item)
-        log.i("fetch num: %d" % len(news))
+
         if self.debug:
             print("print all news:")
             for _item in news:

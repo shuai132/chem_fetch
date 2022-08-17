@@ -60,8 +60,6 @@ def main():
         log.d("desc: zh:", item.desc_zh)
 
     def upload_news(news: List[News]):
-        if args.debug:
-            return
         bmob = Bmob(config.BMOB_APP_ID, config.BMOB_APP_KEY)
         if args.force_update:
             for item in news:
@@ -108,8 +106,11 @@ def main():
         ]
         for paper in papers:
             try:
+                log.i("fetch paper:", paper)
                 paper_news = paper.fetch_filter()
-                upload_news(paper_news)
+                log.i("fetch num:", len(paper_news))
+                if not args.debug:
+                    upload_news(paper_news)
             except Exception as e:
                 log.e("paper exception:", type(paper), e)
                 if args.debug:

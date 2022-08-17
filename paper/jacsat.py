@@ -34,7 +34,7 @@ class Jacsat(PaperFetcher):
 
             item.from_ = "JACS"
             news.append(item)
-        log.i("fetch part<1> news num now: %d" % len(news))
+        log.d("fetch part<1> news num now: %d" % len(news))
         for raw_html_article in raw_html.xpath(
                 '//div[@class="col-xs-12 current_issue"]//div[@class="grid-item slide-item" and not(@aria-role="listitem")]'):
             raw_html_article = etree.tostring(raw_html_article, encoding=str)
@@ -52,7 +52,7 @@ class Jacsat(PaperFetcher):
 
             item.from_ = "JACS"
             news.append(item)
-        log.i("fetch part<2> news num now: %d" % len(news))
+        log.d("fetch part<2> news num now: %d" % len(news))
         if self.debug:
             print("print all jacsat news:")
             for _item in news:
