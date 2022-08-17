@@ -36,7 +36,7 @@ def get_html_text(url: str, debug: bool, use_chrome=False):
             chrome_options = Options()
             # chrome_options.add_argument('headless')
             browser = webdriver.Chrome(chrome_options=chrome_options)
-            browser.set_page_load_timeout(30)
+            browser.set_page_load_timeout(60)
             browser.get(url)
             return browser.page_source
         else:
