@@ -79,14 +79,24 @@ def main():
             if recorder.check(item.title):
                 log.i("ignore: cache:", item.title)
                 continue
-            while True:
+
+            try_times = 3
+            ret = []
+            while try_times:
+                try_times -= 1
+
                 # noinspection PyBroadException
                 try:
                     ret: List = bmob.find("news", where={"title": item.title}, keys={}, limit=1).jsonData["results"]
                     time.sleep(1)
                     break
                 except Exception:
-                    log.w("bmob.find error, will retry")
+                    if try_times == 0:
+                        log.e("bmob.find error, will skip")
+                        continue
+                    else:
+                        log.w("bmob.find error, will retry")
+
             if len(ret) == 0:
                 translate_news(item)
                 log.i("insert:", item.title)
