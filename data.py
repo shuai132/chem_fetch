@@ -13,3 +13,10 @@ class News:
         self.desc = ""
         self.desc_zh = ""
         self.author_list: List[str] = []
+
+
+class AddNews:
+    def __init__(self):
+        self.news___ = None
+        self.token = ""
+        self.force_upd = ""

@@ -14,14 +14,18 @@ def object_to_dict(obj):
     pr = {}
     for name in dir(obj):
         attr = getattr(obj, name)
-        if name.startswith('__'):
-            continue
-        if callable(attr):
-            continue
-        if name.startswith('_'):
-            name = name[1:]
-        if name.endswith('_'):
-            name = name[:-1]
+        if name.endswith('___'):
+            name = name[:-3]
+            attr = object_to_dict(attr)
+        else:
+            if name.startswith('__'):
+                continue
+            if callable(attr):
+                continue
+            if name.startswith('_'):
+                name = name[1:]
+            if name.endswith('_'):
+                name = name[:-1]
         pr[name] = attr
     return pr
 
