@@ -34,13 +34,15 @@ def object_to_json(obj):
     return json.dumps(object_to_dict(obj), indent=2)
 
 
-def get_html_text(url: str, debug: bool, use_chrome=False):
+def get_html_text(url: str, debug: bool, use_chrome=False, home: str = ""):
     def request_url():
         if use_chrome:
             chrome_options = Options()
             # chrome_options.add_argument('headless')
             browser = webdriver.Chrome(chrome_options=chrome_options)
             browser.set_page_load_timeout(60)
+            if home != "":
+                browser.get(home)
             browser.get(url)
             return browser.page_source
         else:
@@ -48,7 +50,7 @@ def get_html_text(url: str, debug: bool, use_chrome=False):
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36",
             }).text
 
-    if debug:
+    if True:
         cache_html_file = DIR_CACHE + "/" + url.replace(':', '_').replace('/', '_') + ".html"
         try:
             with open(cache_html_file) as f:

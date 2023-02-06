@@ -11,48 +11,51 @@ from paper_fetcher import PaperFetcher
 class Jacsat(PaperFetcher):
     def fetch(self) -> List[News]:
         url_home = "https://pubs.acs.org"
-        # http_prefix = url_home[0:url_home.find("//")]
-        url_jacsat = url_home + "/journal/jacsat"
+        url_jacsat = url_home + "/toc/jacsat/current"
         news: List[News] = []
         html_text = utils.get_html_text(url_jacsat, self.debug, use_chrome=True)
         raw_html = etree.HTML(html_text)
 
-        for raw_html_article in raw_html.xpath(
-                '//div[@class="journal-home_section asap_articles"]//div[@class="grid-item slide-item" and not(@aria-role="listitem")]'):
-            raw_html_article = etree.tostring(raw_html_article, encoding=str)
-            html = etree.HTML(raw_html_article)
+        def try_parser_news(raw_html_article: str):
+            try:
+                raw_html_article = etree.tostring(raw_html_article, encoding=str)
+                html = etree.HTML(raw_html_article)
 
-            item = News()
-            item.type = "Article"
-            item.datetime = html.xpath('//span[@class="pub-date-value"]/text()')[0]
+                if len(html.xpath('//div[@class="issue-item clearfix"]')) == 0:
+                    log.d("skip not issue-item clearfix...")
+                    return
 
-            item.url = url_home + html.xpath('//div/div/h3/a/@href')[0]
-            item.img = html.xpath('//div/div/div[1]/a/img/@src')[0]
-            item.title = html.xpath('//div/div/h3/a/@title')[0]
-            # item.desc = ""
-            item.author_list = html.xpath('//ul[@title="list of authors"]/li/span/text()')
+                item = News()
+                item.type = "Article"
 
-            item.from_ = "JACS"
-            news.append(item)
-        log.d("fetch part<1> news num now: %d" % len(news))
-        for raw_html_article in raw_html.xpath(
-                '//div[@class="col-xs-12 current_issue"]//div[@class="grid-item slide-item" and not(@aria-role="listitem")]'):
-            raw_html_article = etree.tostring(raw_html_article, encoding=str)
-            html = etree.HTML(raw_html_article)
+                item.url = url_home + html.xpath('//div[3]/span/h5/a/@href')[0]
 
-            item = News()
-            item.type = "Article"
-            item.datetime = html.xpath('//div/div/div[3]/span[4]/text()')[0]
+                item_img = html.xpath('//div[2]/img/@src')
+                if len(item_img) == 0:
+                    item_img = html.xpath('//div[2]/img/@data-src')
+                item.img = url_home + item_img[0]
 
-            item.url = url_home + html.xpath('//div/div/h3/a/@href')[0]
-            item.img = html.xpath('//div/div/div[1]/a/img/@src')[0]
-            item.title = html.xpath('//div/div/h3/a/@title')[0]
-            # item.desc = ""
-            item.author_list = html.xpath('//ul[@title="list of authors"]/text()')
+                item.title = html.xpath('//div[3]/span/h5/a/@title')[0]
 
-            item.from_ = "JACS"
-            news.append(item)
-        log.d("fetch part<2> news num now: %d" % len(news))
+                for author in html.xpath('//div[3]/ul/li'):
+                    word_list = author.xpath("span/*/text()")
+                    item.author_list.append(" ".join(word_list).replace(" *", "*"))
+
+                item.datetime = html.xpath('//span[@class="pub-date-value"]/text()')[0]
+
+                # item.desc = ""
+
+                item.from_ = "JACS"
+                news.append(item)
+                log.d("add news: ", item.title)
+            except LookupError as e:
+                log.e("LookupError:", e)
+
+        for article in raw_html.xpath(
+                '//*[@id="pb-page-content"]/div/main/div[3]/div/div')[1:]:
+            try_parser_news(article)
+
+        log.d("fetch news num: %d" % len(news))
         if self.debug:
             print("print all jacsat news:")
             for _item in news:
