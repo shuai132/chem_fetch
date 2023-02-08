@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import time
 from typing import List
@@ -26,7 +27,7 @@ def main():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('--debug', type=bool, const=True, nargs='?')
     parser.add_argument('--log', type=bool, const=True, nargs='?')
-    parser.add_argument('--force_update', type=bool, const=True, nargs='?')
+    parser.add_argument('--ignore_exception', type=bool, const=True, nargs='?')
     parser.add_argument('--loop', type=int, help='interval in minute')
     parser.add_argument('--admin_token', type=str)
     args = parser.parse_args()
@@ -37,7 +38,6 @@ def main():
     log.debug = args.debug or args.log
 
     count_insert = 0
-    count_update = 0
 
     service.init()
 
@@ -53,12 +53,6 @@ def main():
         log.d("desc: zh:", item.desc_zh)
 
     def upload_news(news: List[News]):
-        if args.force_update:
-            for item in news:
-                translate_news(item)
-                nonlocal count_update
-                count_update += 1
-            return
         news.reverse()
         for item in news:
             translate_news(item)
@@ -68,9 +62,11 @@ def main():
             add_news.news___ = item
             add_news.token = config.ADMIN_TOKEN
             rsp = service.request("add_news", utils.object_to_dict(add_news))
-            log.i("result:", rsp.text)
-            nonlocal count_insert
-            count_insert += 1
+            rsp_json = json.loads(rsp.text)
+            log.i("rsp_json:", rsp_json)
+            if rsp_json['ok']:
+                nonlocal count_insert
+                count_insert += 1
 
     def fetch_and_update():
         papers = [
@@ -79,20 +75,23 @@ def main():
             NatureNChem(args.debug),
             Angew(args.debug),
         ]
-        for paper in papers:
-            try:
-                log.i("fetch paper:", paper)
-                paper_news = paper.fetch_filter()
-                log.i("fetch num:", len(paper_news))
-                if not args.debug:
-                    upload_news(paper_news)
-            except Exception as e:
-                log.e("paper exception:", type(paper), e)
-                if args.debug:
-                    raise e
 
-        if args.force_update:
-            log.i("count_update:", count_update)
+        def fetch_and_update_paper(paper):
+            log.i("start fetch paper:", paper)
+            paper_news = paper.fetch_filter()
+            log.i("fetch_filter: num:", len(paper_news))
+            if not args.debug:
+                upload_news(paper_news)
+
+        for paper_item in papers:
+            if args.ignore_exception or args.debug:
+                try:
+                    fetch_and_update_paper(paper_item)
+                except Exception as e:
+                    log.e("fetch_and_update exception:", e)
+            else:
+                fetch_and_update_paper(paper_item)
+
         log.i("count_insert:", count_insert)
 
         if not args.debug:
