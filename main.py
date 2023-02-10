@@ -53,8 +53,12 @@ def main():
         log.d("desc: zh:", item.desc_zh)
 
     def upload_news(news: List[News]):
+        log.i("upload_news...")
         news.reverse()
         for item in news:
+            if service.check_exist(item.url):
+                log.i("item exist, skip...")
+                continue
             translate_news(item)
             log.i("insert:", item.title)
             item.author_list = item.author_list.__str__()

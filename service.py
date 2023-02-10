@@ -1,3 +1,5 @@
+import json
+
 import requests
 
 from log import log
@@ -12,7 +14,7 @@ def init():
     log.i("HOST_URL: ", HOST_URL)
 
 
-def request(api, json_data):
+def request(api: str, json_data: dict) -> requests.Response:
     headers = {
         'Connection': 'keep-alive'
     }
@@ -26,3 +28,19 @@ def request(api, json_data):
 
     log.d("request:", api, response.text)
     return response
+
+
+def check_exist(url) -> bool:
+    response = request("add_news", {
+        "news": {
+            "url": url,
+        },
+        "is_check": True,
+    })
+    rsp_json = json.loads(response.text)
+    return rsp_json['data'] == 1
+
+
+if __name__ == '__main__':
+    init()
+    log.i("check_exist:", check_exist("https://www.nature.com/articles/s41467-022-35371-6"))
